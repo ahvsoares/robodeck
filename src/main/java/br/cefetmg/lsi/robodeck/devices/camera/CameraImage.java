@@ -34,6 +34,19 @@ public class CameraImage {
 	 * Conteúdo da imagem.
 	 */
 	private byte[] data;
+	
+	/**
+	 * Nome da imagem, gerado automaticamente e sequencialmente.
+	 */
+	private String name;
+	
+	public CameraImage(String imgName){
+		name = imgName;
+	}
+
+	public String getName() {
+		return name;
+	}
 
 	public int getWidth() {
 		return width;
@@ -80,20 +93,7 @@ public class CameraImage {
 		this.data = data;
 	}
 	
-	public BufferedImage getImage() throws IOException{
-		// http://www.programcreek.com/2009/02/java-convert-image-to-byte-array-convert-byte-array-to-image/
-		
-		/*ByteArrayInputStream bis = new ByteArrayInputStream(this.data);
-        Iterator<?> readers = ImageIO.getImageReadersByFormatName(this.format); 
- 
-        ImageReader reader = (ImageReader) readers.next();
-        Object source = bis; 
-        ImageInputStream iis = ImageIO.createImageInputStream(source); 
-        reader.setInput(iis, true);
-        ImageReadParam param = reader.getDefaultReadParam();
-
-        Image image = reader.read(0, param);*/
-		
+	public BufferedImage getImage() throws IOException{		
 		BufferedImage image = ImageIO.read(new ByteArrayInputStream(this.data));
         
 		return image;

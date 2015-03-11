@@ -1,19 +1,33 @@
 package br.cefetmg.lsi.robodeck;
 
+import java.io.File;
 import java.io.IOException;
 
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+
+import br.cefetmg.lsi.robodeck.devices.camera.CameraImage;
+import br.cefetmg.lsi.robodeck.exceptions.CameraException;
+import br.cefetmg.lsi.robodeck.exceptions.CameraImageFormatLenghtException;
+import br.cefetmg.lsi.robodeck.exceptions.CameraStartException;
+import br.cefetmg.lsi.robodeck.exceptions.CameraStopException;
 import br.cefetmg.lsi.robodeck.exceptions.EmptyMessageException;
 import br.cefetmg.lsi.robodeck.exceptions.MoveRobotException;
 import br.cefetmg.lsi.robodeck.exceptions.SpinRobotException;
 import br.cefetmg.lsi.robodeck.exceptions.StrafeRobotException;
 import br.cefetmg.lsi.robodeck.exceptions.TurnRobotException;
+import br.cefetmg.lsi.robodeck.utils.PropertiesLoaderImpl;
 
 public class TesteRobodeckAPI {
 	private static Robot robot;
+	private static JFrame cameraWindow;
+	private static JLabel cameraImageLabel;
 
 	public static void main(String[] args) {
-//		testeSequencial();
-		testeConcorrente();
+		testeSequencial();
+//		testeConcorrente();
 	}
 	
 	private static void testeConcorrente(){
@@ -118,9 +132,7 @@ public class TesteRobodeckAPI {
 //			robot.readMAPVersion(TesteRobodeckAPI.class.getName());
 
 			// Comandos para a câmera do robô.
-			robot.cameraStart(TesteRobodeckAPI.class.getName());
-			Thread.sleep(8000);
-			robot.cameraStop(TesteRobodeckAPI.class.getName());
+			cameraTest();
 //			robot.cameraTakePhoto(TesteRobodeckAPI.class.getName());
 //			robot.rtspServerStart(TesteRobodeckAPI.class.getName());
 //			robot.rtspServerStop(TesteRobodeckAPI.class.getName());
@@ -180,6 +192,75 @@ public class TesteRobodeckAPI {
 		robot.spin(Robot.SPIN_COUNTERCLOCKWISE, 1000, TesteRobodeckAPI.class.getName());
 		Thread.sleep(5000);
 		robot.brake(TesteRobodeckAPI.class.getName());
+	}
+
+	private static void cameraTest() throws IOException, EmptyMessageException, CameraStopException, InterruptedException {
+		
+		try{
+			robot.cameraStart(TesteRobodeckAPI.class.getName());
+			openCameraWindow();
+			for (int i = 0; i < 10; i++){
+				CameraImage cameraImage = robot.acquireCameraImage();
+	//			saveCameraImage(cameraImage);
+				updateCameraImage(cameraImage);
+			}
+			
+		} catch (Exception e){
+			System.err.println("Falha ao ler imagem da câmera. Erro: " + e.getMessage());
+		} finally {
+			closeCameraWindow();
+			robot.cameraStop(TesteRobodeckAPI.class.getName());			
+		}
+	}
+	
+	/**
+	 * Salva em arquivo a imagem recebida da câmera.
+	 * 
+	 * @param cameraImage imagem recebida da câmera.
+	 * @param imgNbr número da imagem, desde o início da recepção dos dados.
+	 * 
+	 * @throws IOException
+	 */
+	private static void saveCameraImage(CameraImage cameraImage) throws IOException{
+		ImageIO.write(cameraImage.getImage(), cameraImage.getFormat(),
+				new File(PropertiesLoaderImpl.getValor("robot.camera.imageDestinationFolder")
+						+ "/imgRecebidas", cameraImage.getName() + "." + cameraImage.getFormat()));		
+	}
+	
+	/**
+	 * Inicia a janela de imagens da câmera.
+	 */
+	private static void openCameraWindow(){
+        cameraWindow = new JFrame("Camera");
+        cameraWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        cameraImageLabel = new JLabel();
+        cameraWindow.getContentPane().add(cameraImageLabel);
+
+        // Exibe a janela.
+        cameraWindow.pack();
+        cameraWindow.setVisible(true);
+	}
+	
+	/**
+	 * Exibe a imagem recebida numa janela na tela.
+	 * 
+	 * @param cameraImage Imagem recebida da câmera.
+	 * 
+	 * @throws IOException 
+	 */
+	private static void updateCameraImage(CameraImage cameraImage) throws IOException {        
+		cameraImageLabel.setIcon(new ImageIcon(cameraImage.getImage()));
+		cameraWindow.setSize(cameraImage.getWidth(), cameraImage.getHeight());
+		cameraWindow.repaint();
+	}
+	
+	/**
+	 * Fecha a janela de imagens da câmera.
+	 */
+	private static void closeCameraWindow(){
+        cameraWindow.pack();
+        cameraWindow.setVisible(false);
 	}
 
 }

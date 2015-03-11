@@ -1,29 +1,26 @@
 package br.cefetmg.lsi.robodeck.devices.camera;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-
-import javax.imageio.ImageIO;
 
 import br.cefetmg.lsi.robodeck.exceptions.CameraException;
 import br.cefetmg.lsi.robodeck.exceptions.CameraImageFormatLenghtException;
 import br.cefetmg.lsi.robodeck.utils.PrimitiveDataTypesManipulation;
 import br.cefetmg.lsi.robodeck.utils.PropertiesLoaderImpl;
 
-public class Camera implements Runnable {
+public class Camera /*implements Runnable*/ {
 	protected final boolean debug = new Boolean(PropertiesLoaderImpl.getValor("robodeckapi.debugmode")); // Para ativar/desativar saidas "System.out.println();" de depuracao.
 	
 	/**
 	 * Para saber se deve ou não continuar a capturar imagens da câmera.
 	 */
-	private boolean capture;
+//	private boolean capture;
 	
 	/**
 	 * Para saber se pode interromper a captura de imagens.
 	 */
-	private boolean canStopCapture;
+//	private boolean canStopCapture;
 
 	/**
 	 * Instância de Camera.
@@ -43,14 +40,20 @@ public class Camera implements Runnable {
 	 * Quanto tempo dorme antes de iniciar nova tentativa de obter os dados da imagem da câmera.
 	 */
 	private final int SLEEP_TIME = 1000;
+	
+	/**
+	 * Número da imagem recebida, desde o início da recepção dos dados.
+	 */
+	private int imgNbr;
 
 	/**
 	 * Cria uma instância de Camera, ajustando seu fluxo de dados.
 	 */
 	private Camera(){
-		capture = false;
-		canStopCapture = true;
-		inputStream = null;
+//		capture = false;
+//		canStopCapture = true;
+//		inputStream = null;
+		imgNbr = 0;
 	}
 
 	/**
@@ -73,7 +76,7 @@ public class Camera implements Runnable {
 	/**
 	 * Recebe, continuamente, o fluxo de dados vindo da câmera.
 	 */
-	public void run() {
+	/*public void run() {
 		int i = 0;
 		
 		while (capture){
@@ -129,11 +132,10 @@ public class Camera implements Runnable {
 				if (cameraImage != null){
 					
 					if (debug) {
-						ImageIO.write(cameraImage.getImage(), cameraImage.getFormat(),
-								new File(PropertiesLoaderImpl.getValor("robot.camera.imageDestinationFolder")
-										+ "/imgRecebidas", "recebido" + i + "." + cameraImage.getFormat()));
+						saveCameraImage(cameraImage, i);
 					}
 					
+					showCameraImage(cameraImage);
 				}
 				
 			} catch (IOException e) {
@@ -158,7 +160,7 @@ public class Camera implements Runnable {
 			System.out.println(debugStr);
 		}
 		
-	}
+	}*/
 	
 	/**
 	 * Lê uma imagem enviada pela câmera.
@@ -170,12 +172,12 @@ public class Camera implements Runnable {
 	 * @throws CameraException 
 	 * @throws InterruptedException 
 	 */
-	private CameraImage acquireImage(int imgNbr) throws IOException, CameraImageFormatLenghtException, CameraException, InterruptedException{
+	/*private*/public CameraImage acquireImage() throws IOException, CameraImageFormatLenghtException, CameraException, InterruptedException{
 		
 		if (inputStream != null){
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			final int imgHeaderLength = 12;
-			CameraImage cameraImage = new CameraImage();
+			CameraImage cameraImage = new CameraImage("img" + imgNbr);
 			
 			byte[] header = new byte[imgHeaderLength];
 	        
@@ -187,7 +189,7 @@ public class Camera implements Runnable {
 	        
 			if (debug){
 		        debugStr.append("\n===========\n");
-		        debugStr.append("Camera.acquireImage(" + imgNbr + "):");
+		        debugStr.append("Camera.acquireImage(" + cameraImage.getName() + "):");
 		        debugStr.append("\nCabeçalho da imagem: " + dataToString(header));
 				System.out.println(debugStr);
 			}
@@ -235,6 +237,7 @@ public class Camera implements Runnable {
 	
 	        baos.flush();
 	        baos.close();
+	        imgNbr++;
 	        
 	        return cameraImage;
 		} else {
@@ -249,16 +252,16 @@ public class Camera implements Runnable {
 	 * @param cameraInputStream Fluxo de dados da câmera.
 	 */
 	public void setStartCaptureAttributes(InputStream cameraInputStream) {
-		capture = true;
+//		capture = true;
 		inputStream = cameraInputStream;
 	}
 	
 	/**
 	 * Ajusta os atributos para o robô parar de capturar imagens da câmera.
 	 */
-	public void setStopCaptureAttributes() {
+	/*public void setStopCaptureAttributes() {
 		capture = false;
-	}
+	}*/
 	
 	/**
 	 * Calcula o tamanho da imagem.
@@ -316,8 +319,12 @@ public class Camera implements Runnable {
 	 * 
 	 * @return true se puder a captura de imagens puder ser parada e false caso contrário.
 	 */
-	public boolean canStopCapture(){
+	/*public boolean canStopCapture(){
 		return canStopCapture;
+	}*/
+
+	public int getImgNbr() {
+		return imgNbr;
 	}
 	
 }

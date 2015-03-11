@@ -6,6 +6,8 @@ import java.net.PortUnreachableException;
 import java.net.UnknownHostException;
 
 import br.cefetmg.lsi.robodeck.devices.camera.Camera;
+import br.cefetmg.lsi.robodeck.devices.camera.CameraImage;
+import br.cefetmg.lsi.robodeck.exceptions.CameraException;
 import br.cefetmg.lsi.robodeck.exceptions.CameraImageFormatLenghtException;
 import br.cefetmg.lsi.robodeck.exceptions.CameraStartException;
 import br.cefetmg.lsi.robodeck.exceptions.CameraStopException;
@@ -63,7 +65,7 @@ public class Robot {
 	/**
 	 * Thread da câmera.
 	 */
-	private Thread cameraThread;
+//	private Thread cameraThread;
 	
 	/**
 	 * Câmera do robô.
@@ -524,7 +526,9 @@ public class Robot {
 	 */
 	public void cameraStart(String source) throws IOException, EmptyMessageException, CameraStartException, InterruptedException, CameraImageFormatLenghtException{
 		InputStream cameraInputStream = robotConnection.sendCameraStartCommand(source);		
-		startCameraThread(cameraInputStream);
+//		startCameraThread(cameraInputStream);
+		camera = Camera.getInstance();
+		camera.setStartCaptureAttributes(cameraInputStream);
 	}
 	
 	/**
@@ -532,7 +536,7 @@ public class Robot {
 	 * 
 	 * @param cameraInputStream Fluxo de dados vindos da câmera.
 	 */
-	private void startCameraThread(InputStream cameraInputStream){		
+	/*private void startCameraThread(InputStream cameraInputStream){		
         StringBuffer debugStr = new StringBuffer();
 		
 		if (debug){
@@ -548,7 +552,7 @@ public class Robot {
 		
 		cameraThread = new Thread(camera);
 		cameraThread.start();
-	}
+	}*/
 	
 	/**
 	 * Finaliza a captura de imagens da câmera.
@@ -559,7 +563,7 @@ public class Robot {
 	 * @throws InterruptedException 
 	 */
 	public void cameraStop(String source) throws IOException, EmptyMessageException, CameraStopException, InterruptedException{
-		stopCameraThread();
+//		stopCameraThread();
 		robotConnection.sendCameraStopCommand(source);
 	}
 	
@@ -568,7 +572,7 @@ public class Robot {
 	 * 
 	 * @throws InterruptedException 
 	 */
-	private void stopCameraThread() throws InterruptedException{	
+	/*private void stopCameraThread() throws InterruptedException{	
         StringBuffer debugStr = new StringBuffer();
 		
 		camera = Camera.getInstance();		
@@ -599,6 +603,19 @@ public class Robot {
 			System.out.println(debugStr);
 		}
 		cameraThread.join(1000);		
+	}*/
+	
+	/**
+	 * 
+	 * @return
+	 * 
+	 * @throws InterruptedException 
+	 * @throws CameraException 
+	 * @throws CameraImageFormatLenghtException 
+	 * @throws IOException 
+	 */
+	public CameraImage acquireCameraImage() throws IOException, CameraImageFormatLenghtException, CameraException, InterruptedException{
+		return camera.acquireImage();
 	}
 	
 }
